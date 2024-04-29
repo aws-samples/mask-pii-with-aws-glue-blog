@@ -69,7 +69,15 @@ Complete the following steps:
 
 ## 1. Prepare the AWS Source account
 
-The following resources will be provisioned as part of the **CloudFormation template** launch:
+
+Complete the following steps:
+
+1. Launch the CloudFormation template
+2. Configure the _Bastion Host_ (Amazon Cloud9)
+3. Create and populate the `customer` database table
+
+
+The following resources will be provisioned as part of the CloudFormation `cf-prerequisites.yml` template launch:
 
 1. Amazon VPC
 2. Amazon RDS for PostgreSQL database instance
@@ -85,7 +93,8 @@ The following resources will be provisioned as part of the **CloudFormation temp
 > If you have not previously provisioned an **Amazon Cloud9** on this AWS account, launch the Cloudformation template `cf_aws_cloud9_ssm_roles.yml` first. 
 
 
-To launch the **CloudFormation** template:
+#### 1. To launch the **CloudFormation** template:
+
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
 2. Log into the [AWS Console](https://console.aws.amazon.com/) with your **AWS Source account**.
@@ -107,7 +116,7 @@ To launch the **CloudFormation** template:
 
 
 
-#### To configure the _Bastion Host_ (Amazon Cloud9):
+#### 2. To configure the _Bastion Host_ (Amazon Cloud9):
 
 1. On the **AWS Console**, navigate to **Cloud9**.
 2. Select the Cloud9 environment, then choose **Open in Cloud9**.
@@ -122,7 +131,7 @@ chmod 755 ./cloud9-AL2023-setup.sh
 This will install PostgreSQL client on the environment.
 
 
-#### To create and populate the `customer` database table:
+#### 3. To create and populate the `customer` database table:
 
 In the **Cloud9 environment**, upload the artifacts in your local project `sql` directory.
 

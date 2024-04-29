@@ -109,6 +109,7 @@ The following resources will be provisioned as part of the CloudFormation `cf-pr
 9. Review the rest of parameters and choose **Next**.
 10. In **Review and create**, click the check box **I acknowledge that AWS CloudFormation might create IAM resources with custom names**. Then choose **Submit**.
 
+It will take ~10 minutes to complete.
 
 > [!TIP]
 > Once you've created the AWS CloudFormation stack, review the information on the **Outputs** pane of the stack on the Cloudformation Console.
@@ -182,6 +183,7 @@ To launch the **CloudFormation template**:
 9. Review the rest of parameters and choose **Next**.
 10. In **Review and create**, click the check box "I acknowledge that AWS CloudFormation might create IAM resources with custom names". Then choose **Submit**.
 
+It will take ~1 minute to complete.
 
 > [!TIP]
 > Once you've created the AWS CloudFormation stack, review the fields shown on the **Outputs** pane of the stack on the Cloudformation Console.

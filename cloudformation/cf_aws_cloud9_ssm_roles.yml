@@ -1,0 +1,41 @@
+---
+## Scrub PII between Amazon RDS databases using visual ETL jobs in AWS Glue Studio
+## 
+## Provision this CloudFormation template if you get the follwoing error 
+## when provisioning the prerequisites CloudFormation template:
+##
+## "Instance profile AWSCloud9SSMInstanceProfile does not exist in this account. 
+## "Please create an instance profile and role as described 
+## "here https://docs.aws.amazon.com/cloud9/latest/user-guide/ec2-ssm.html
+##
+## 
+AWSTemplateFormatVersion: 2010-09-09
+Resources: 
+  AWSCloud9SSMAccessRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - cloud9.amazonaws.com
+              - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Description: 'Service linked role for AWS Cloud9'
+      Path: '/service-role/'
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile
+      RoleName: 'AWSCloud9SSMAccessRole'
+
+  AWSCloud9SSMInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      InstanceProfileName: AWSCloud9SSMInstanceProfile
+      Path: "/cloud9/"
+      Roles: 
+        - 
+          Ref: AWSCloud9SSMAccessRole
+ 

@@ -1,0 +1,448 @@
+---
+## Copy and scrub PII between Amazon RDS databases using visual ETL jobs in AWS Glue Studio
+## Prerequisites - Cloudformation template to provision prerequisites
+##
+## Changelog:
+##
+## Dependencies: 
+##
+## This sample code is made available under the MIT-0 license. See the LICENSE file.
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: Scrub PII between Amazon RDS databases using visual ETL jobs in AWS Glue Studio prerequisites stack
+
+## Parameters
+Parameters:
+  AccountType:
+    Type: String
+    Default: Glue
+    AllowedValues:
+      - Source
+      - Glue
+      - Target
+    Description: Determines whether this is the Source, Target or the dedicated Glue account.
+  TemplateName:
+    Type: String
+    Default: rds-glue-mask-pii
+    Description: Name used for different elements created.
+  DBMasterUsername:
+    Description: '[** Required only if this account is Source or Target]: The master user name for the DB instance.'
+    Type: String
+    Default: masteruser
+  DBMasterUserPassword:
+    Description: '[** Required only if this account is Source or Target]: The master password for the DB instance.'
+    Type: String
+    NoEcho: true
+    Default: ''
+  EngineVersion:
+    Description: '[** Required only if this account is Source or Target]: PostgreSQL version.'
+    Type: String
+    Default: '13.14'
+  DBInstanceClass:
+    Description: '[** Required only if this account is Source or Target]: The instance type of database server.'
+    Type: String
+    Default: 'db.t3.medium'
+
+## Conditions
+Conditions:
+  isGlueAccount: !Equals
+    - !Ref AccountType
+    - Glue
+  isNotGlueAccount: !Not
+    - !Equals
+        - !Ref AccountType
+        - Glue
+  
+## Mappings
+Mappings:
+  NetworkSettings:
+    Source:
+      vpcCidr: 10.2.0.0/16
+      PublicSubnetCidr: 10.2.0.0/24
+      PrivateSubnetACidr: 10.2.10.0/24
+      PrivateSubnetBCidr: 10.2.11.0/24
+    Glue:
+      vpcCidr: 10.1.0.0/16
+      PublicSubnetCidr: 10.1.0.0/24
+      PrivateSubnetACidr: 10.1.10.0/24
+      PrivateSubnetBCidr: 10.1.11.0/24
+    Target:
+      vpcCidr: 10.3.0.0/16
+      PublicSubnetCidr: 10.3.0.0/24
+      PrivateSubnetACidr: 10.3.10.0/24
+      PrivateSubnetBCidr: 10.3.11.0/24
+  DBName:
+    Source:
+      name: sourcedb
+    Target:
+      name: targetdb
+    Glue:
+      name: ""
+
+Resources:
+
+##
+## Networking resources:
+##   - VPC
+##   - public subnet if account is not the dedicated Glue account
+##   - private subnet
+##   - route tables
+##
+
+## The VPC
+  MainVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      CidrBlock: !FindInMap [ NetworkSettings, !Ref AccountType, vpcCidr ]
+      Tags:
+        - Key: Name
+          Value:  !Sub ${TemplateName}-vpc
+
+## Create an IGW & attach it to the VPC this is not the Glue account
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Condition: isNotGlueAccount
+    DependsOn: MainVPC
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${TemplateName}-igw
+  attachIGW:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Condition: isNotGlueAccount
+    Properties:
+      VpcId: !Ref MainVPC
+      InternetGatewayId: !Ref InternetGateway
+
+# Now some subnets, 1 public if Source or Target accounts, and 1 private:
+  PublicSubnetA:
+    Condition: isNotGlueAccount
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: !FindInMap [ NetworkSettings, !Ref AccountType, PublicSubnetCidr ]
+      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: !Sub ${TemplateName}-PublicA
+ 
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: !FindInMap [ NetworkSettings, !Ref AccountType, PrivateSubnetACidr ]
+      AvailabilityZone: !Select [ 0, !GetAZs ]    # Get the first AZ in the list
+      Tags:
+      - Key: Name
+        Value: !Sub ${TemplateName}-PrivateA
+  PrivateSubnetB:
+    Condition: isNotGlueAccount
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: !FindInMap [ NetworkSettings, !Ref AccountType, PrivateSubnetBCidr ]
+      AvailabilityZone: !Select [ 1, !GetAZs ]    # Get the second AZ in the list
+      Tags:
+      - Key: Name
+        Value: !Sub ${TemplateName}-PrivateB
+
+
+# Route tables for public subnet if account is not the dedicated Glue account:
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Condition: isNotGlueAccount
+    Properties:
+      VpcId: !Ref MainVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${TemplateName}-public-rtb
+  PublicRouteToIGW:   # Public route table has direct routing to IGW:
+    Type: AWS::EC2::Route
+    Condition: isNotGlueAccount
+    DependsOn: attachIGW
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # Here is a private route table:
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MainVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${TemplateName}-private-rtb
+
+# Attach the public subnets to public route tables,
+# and attach the private subnets to private route tables:
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: isNotGlueAccount
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetBRouteTableAssociation:
+    Condition: isNotGlueAccount
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTable
+
+
+##
+## Bastion (Cloud9) related resources to connect to the database.
+## Only created if account is Source or Target.
+##
+
+  Cloud9Instance:
+    Condition: isNotGlueAccount
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties:
+      Name: !Sub ${TemplateName}-Cloud9-IDE
+      Description: !Sub ${TemplateName}-Cloud9-IDE
+      AutomaticStopTimeMinutes: 240
+      SubnetId: !Ref PublicSubnetA
+      InstanceType: 't3.medium'
+      ImageId: amazonlinux-2023-x86_64
+      ConnectionType: "CONNECT_SSM"
+
+
+##
+## Security Group for the dedicated Glue account 
+##
+
+  GlueSecurityGroup:
+    Condition: isGlueAccount
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${TemplateName}-glue-account-sg
+      GroupDescription: Dedicated Glue account security group
+      VpcId: !Ref MainVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${TemplateName}-glue-account-sg
+
+  ## Self-referencing ingress
+  GlueSGSelfRefIngress:
+    Condition: isGlueAccount
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref GlueSecurityGroup
+      Description: Self-reference ingress
+      IpProtocol: tcp
+      FromPort: 0
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref GlueSecurityGroup
+
+
+##
+## IAM role for AWS Glue.
+## This is the IAM role that crawlers and ETL job will use. 
+##
+  GlueServiceRole:
+    Condition: isGlueAccount
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: !Sub AWSGlueServiceRole-${TemplateName}
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - glue.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: / 
+
+##
+## S3 gateway endpoint for the dedicated Glue account.
+## This is needed for AWS Glue to store the scripts in S3.
+##
+  S3Endpoint:
+    Condition: isGlueAccount
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      VpcEndpointType: 'Gateway'
+      VpcId: !Ref MainVPC
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      RouteTableIds:
+        - !Ref PrivateRouteTable
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:*'
+            Resource:
+              - '*'
+
+##
+## Database related resources
+##
+
+## Subnet group for the Amazon RDS database
+  DBSubnetGroup:
+    Condition: isNotGlueAccount
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub ${TemplateName}-db-subnet-group
+      SubnetIds: 
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetB
+      Tags:
+        - Key: Name
+          Value: !Sub ${TemplateName}-db-subnet-group
+
+
+## Security group for the Source or Target Amazon RDS database
+  dbSecGroup:
+    Condition: isNotGlueAccount
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref MainVPC
+      GroupName: !Sub ${TemplateName}-${AccountType}-pgsql-sg
+      GroupDescription: RDS PostgreSQL Database security group
+      Tags:
+        - Key: Name
+          Value: !Sub ${TemplateName}-${AccountType}-pgsql-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: !FindInMap [ NetworkSettings, !Ref AccountType, PublicSubnetCidr ]
+          Description: Allows PostgreSQL access from Cloud9 
+
+## Source or Target Amazon RDS database instance
+  DBInstance:
+    Condition: isNotGlueAccount
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      AllocatedStorage: 100
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      DBInstanceClass: !Ref DBInstanceClass
+      DBInstanceIdentifier: 'rds-glue-mask-pii'
+      DBName: !FindInMap [ DBName, !Ref AccountType, name ]
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      Engine: postgres
+      EngineVersion: !Ref EngineVersion
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterUserPassword
+      MultiAZ: false
+      StorageEncrypted: true
+      PubliclyAccessible: false
+      VPCSecurityGroups:
+      - !Ref dbSecGroup
+## 
+## Outputs
+## 
+Outputs:
+  VPC:
+    Description: VPC
+    Value: !Ref MainVPC
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-VPC"
+  VPCCIDR:
+    Description: VPC CIDR
+    Value: !FindInMap [ NetworkSettings, !Ref AccountType, vpcCidr ]
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-VPCCIDR"  
+  PublicSubnet:
+    Condition: isNotGlueAccount
+    Description: Public subnet ID where Cloud9 bastion runs
+    Value: !Ref PublicSubnetA
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-PublicSubnet"    
+  RDSSubnetGroup:
+    Condition: isNotGlueAccount
+    Description: Subnet group. It groups two private subnets assigned to the Amazon RDS database. 
+    Value: !Ref DBSubnetGroup
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-DBPrivateSubnetGroup"
+  PrivateSubnet:
+    Description: Private subnet.
+    Value: !Ref PrivateSubnetA
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-PrivateSubnet"
+  PrivateSubnetCIDR:
+    Description: Private subnet CIDR
+    Value: !FindInMap [ NetworkSettings, !Ref AccountType, PrivateSubnetACidr ]
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-PrivateSubnetCIDR"    
+  PrivateSubnetB:
+    Condition: isNotGlueAccount
+    Description: Second private subnet assigned to the Amazon RDS database.
+    Value: !Ref PrivateSubnetB
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-PrivateSubnetB"
+  PrivateSubnetBCIDR:
+    Condition: isNotGlueAccount
+    Description: Second private subnet CIDR
+    Value: !FindInMap [ NetworkSettings, !Ref AccountType, PrivateSubnetBCidr ]
+    Export:
+        Name: !Sub "${AWS::Region}-${AWS::StackName}-PrivateSubnetBCIDR"    
+  S3Endpoint:
+    Condition: isGlueAccount
+    Description: 'The S3 gateway endpoint for the dedicated Glue account.'
+    Value: !Ref S3Endpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-S3Endpoint'
+  GlueServiceIAMRole:
+    Condition: isGlueAccount
+    Description: 'The IAM role for AWS Glue service. To be used by crawlers, ELT jobs, etc.'
+    Value: !Ref GlueServiceRole
+    Export:
+      Name: !Sub '${AWS::StackName}-IAMGlueServiceRole'
+  GlueSecurityGroup:
+    Condition: isGlueAccount
+    Description: 'Security group for dedicated Glue account.'
+    Value: !Ref GlueSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-GlueSecurityGroup' 
+  RDSSecurityGroup:
+    Condition: isNotGlueAccount
+    Description: Database security group
+    Value: !Ref dbSecGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-DBSecurityGroup'
+  RDSJdbcURL:
+    Condition: isNotGlueAccount
+    Description: 'JDBC URL connection to the database'
+    Value: !Sub 
+       - 'jdbc:postgresql://${DBInstance.Endpoint.Address}:5432/${dbname}'
+       - dbname: !FindInMap [ DBName, !Ref AccountType, name ]
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSJdbcURL'
+  DSInstanceName:
+    Condition: isNotGlueAccount
+    Description: 'The name of the Amazon RDS instance.'
+    Value: !Ref DBInstance
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSInstanceName'
+  RDSDNSName:
+    Condition: isNotGlueAccount
+    Description: 'The connection endpoint for the database.'
+    Value: !GetAtt 'DBInstance.Endpoint.Address'
+    Export:
+      Name: !Sub '${AWS::StackName}-DNSName'
+
+
+

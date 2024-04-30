@@ -15,45 +15,51 @@ Before leveraging the artifacts in this repository, you need:
 
 ## Artifacts Overview
 
+At a glance, the artifacts provided are [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) templates, shell scripts and files with SQL statements.
 
-#### **`cloudformation/cf-prerequisites.yml`** 
+
+### AWS CloudFormation templates
+
+These teamplates are provided in the `clouformation` directory.
 
 
-This is the [AWS Cloudformation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html) template to provision AWS components in Source, Glue and Target accounts as per the Prerequisites in the blog post. 
+#### `cf-prerequisites.yml`
+
+This template provisions AWS components in Source, Glue and Target accounts as per the Prerequisites in the blog post. 
 
 After deploying this stack on each account, your environment will look like as shown on the diagram below:
 
 
 ![Environment](docs/env-after-prerequisites.jpg)
 
-In addition to the components shown in the diagram, the Cloudformation stack creates an [Amazon Cloud9](https://docs.aws.amazon.com/cloud9/latest/user-guide/welcome.html) environment in both **Source** and **Target accounts**. The purpose of these Amazon Cloud9 environments is to act as **bastion host**, so you can create and access the `customer` table on the Amazon RDS PostgreSQL databases.
+
+In addition to the components shown in the diagram, the CloudFormation stack creates an [Amazon Cloud9](https://docs.aws.amazon.com/cloud9/latest/user-guide/welcome.html) environment in both **Source** and **Target accounts**. The purpose of these Amazon Cloud9 environments is to act as **bastion host**, so you can create and access the `customer` table on the Amazon RDS PostgreSQL databases.
 
 
-#### **`cloudformation/cf_aws_cloud9_ssm_roles.yml`**
+#### `cf_aws_cloud9_ssm_roles.yml`**
 
-This AWS Cloudformation template creates the AWS IAM roles that enable [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html) to manage the EC2 instance that backs the Amazon Cloud9 environment.
+This AWS CloudFormation template creates the AWS IAM roles that enable [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html) to manage the EC2 instance that backs the Amazon Cloud9 environment.
 
-You will need this Cloudformation template **only if** you have **not** previously provisioned an Amazon Cloud9 on the Source and/or Target accounts.
-
-
-#### **`scripts/cloud9-AL2023-setup.sh`**
-
-This is a simple shell script to set up the Amazon Cloud9 environments
+You will need this CloudFormation template **only if** you have **not** previously provisioned an Amazon Cloud9 on the Source and/or Target accounts.
 
 
-#### **`scripts/connect_to_database.sh`**
+### Shell scripts
 
-This is a shell script to help you connect to the Amazon RDS PostgreSQL database provisioned on the AWS account.
-
-
-#### **`sql/create_database_tabel.sql`**
-
-Contains the SQL statements to create the `customer` table. 
+These are all provided in `scripts` directory.
 
 
-#### **`sql/insert_source_data.sql`**
+- **`cloud9-AL2023-setup.sh`**: This is a simple shell script to help you set up the Amazon Cloud9 environments.
 
-Contains the SQL statements to populate the `customer` table on the **Source database**.
+- **`connect_to_database.sh`**: This shell script will help you connect to the Amazon RDS PostgreSQL database provisioned on the AWS account where you run the script.
+
+
+### SQL statement files
+
+These are all provided in `sql` directory.
+
+- **`create_database_tabel.sql`**: Contains the SQL statements to create the `customer` table. 
+
+- **`insert_source_data.sql`**: Contains the SQL statements to populate the `customer` table on the **Source database**.
 
 
 
@@ -67,7 +73,7 @@ Complete the following steps:
 
 
 
-## 1. Prepare the AWS Source account
+### 1. Prepare the AWS Source account
 
 
 Complete the following steps:
@@ -90,7 +96,7 @@ The following resources will be provisioned as part of the CloudFormation `cf-pr
 
 
 > [!IMPORTANT]
-> If you have not previously provisioned an **Amazon Cloud9** on this AWS account, launch the Cloudformation template `cf_aws_cloud9_ssm_roles.yml` first. 
+> If you have not previously provisioned an **Amazon Cloud9** on this AWS account, launch the CloudFormation template `cf_aws_cloud9_ssm_roles.yml` first. 
 
 
 #### 1. To launch the **CloudFormation** template:
@@ -112,7 +118,7 @@ The following resources will be provisioned as part of the CloudFormation `cf-pr
 It will take ~10 minutes to complete.
 
 > [!TIP]
-> Once you've created the AWS CloudFormation stack, review the information on the **Outputs** pane of the stack on the Cloudformation Console.
+> Once you've created the AWS CloudFormation stack, review the information on the **Outputs** pane of the stack on the CloudFormation Console.
 > You will need some of the values, such as **VPC**, **RDSSecurityGroup**, private subnets (**PrivateSubnet** and **PrivateSubnetB** ) and **RDSJdbcURL**.
 
 
@@ -143,7 +149,7 @@ chmod 755 ./connect_to_database.sh
 ./connect_to_database.sh
 ```
 
-Enter the **password** to connect to the database. This is the password you provided when launching the Cloudformation stack.
+Enter the **password** to connect to the database. This is the password you provided when launching the CloudFormation stack.
 
 Then run the following commands to create and populate the `customer` table:
 
@@ -158,7 +164,7 @@ To verify the rows have been inserted:
 sourcedb=> select * from cx.customer;
 ```
 
-## 2 - Prepare the dedicated AWS Glue account
+### 2 - Prepare the dedicated AWS Glue account
 
 The following resources will be provisioned as part of the CloudFormation template launch:
 
@@ -190,14 +196,14 @@ It will take ~1 minute to complete.
 > You will need some of the values such as **VPC**, **GlueSecurityGroup**, **PrivateSubnet** and **GlueServiceIAMRole**.
 
 
-## 3 - Prepare the AWS Target account
+### 3 - Prepare the AWS Target account
 
 
 To setup the **Target account**, log into the AWS Console with your **AWS Target account** and repeat the steps you followed when setting up the Source account. 
 
 The resources provisioned as part of the CloudFormation template launch, will be the same as for the Source account.
 
-- When launching the Cloudformation template, select `Target` for **AccountType** parameter, and enter the **database password** you would like to use.
+- When launching the CloudFormation template, select `Target` for **AccountType** parameter, and enter the **database password** you would like to use.
 
 - After creating the database table, do *not* run the insert SQL statements on `insert_source_data.sql` script.
 

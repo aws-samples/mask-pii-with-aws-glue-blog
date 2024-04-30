@@ -36,7 +36,7 @@ After deploying this stack on each account, your environment will look like as s
 In addition to the components shown in the diagram, the CloudFormation stack creates an [Amazon Cloud9](https://docs.aws.amazon.com/cloud9/latest/user-guide/welcome.html) environment in both **Source** and **Target accounts**. The purpose of these Amazon Cloud9 environments is to act as **bastion host**, so you can create and access the `customer` table on the Amazon RDS PostgreSQL databases.
 
 
-#### `cf_aws_cloud9_ssm_roles.yml`**
+#### `cf_aws_cloud9_ssm_roles.yml`
 
 This AWS CloudFormation template creates the AWS IAM roles that enable [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html) to manage the EC2 instance that backs the Amazon Cloud9 environment.
 

@@ -212,9 +212,9 @@ The resources provisioned as part of the CloudFormation template launch, will be
 - When launching the CloudFormation template:
 
 1. Name the stack i.e. `TargetAccount-Stack`
-2. In **Paramters** section, 
-   a. Select `Target` for **AccountType** parameter, and 
-   b. enter the **database password** you would like to use.
+2. In **Paramters** section:
+  1. Select `Target` for **AccountType** parameter, and 
+  2. enter the **database password** you would like to use.
 
 - After creating the database table, do **NOT** run the insert SQL statements on `insert_source_data.sql` script.
 
@@ -228,14 +228,14 @@ Don't forget to clean up all the AWS resources you created. It is a best practic
 
 To delete the resources:
 
-On the **AWS Source** account:
-- Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `SourceAccount-stack`.
+- On the **AWS Source** account:
+  Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `SourceAccount-stack`.
 
-On the **AWS Glue** account:
-- Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `GlueAccount-stack`.
+- On the **AWS Glue** account:
+  Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `GlueAccount-stack`.
 
-On the **AWS Target** account:
-- Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `TargetAccount-stack`.
+- On the **AWS Target** account:
+  Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `TargetAccount-stack`.
 
 ## Security
 

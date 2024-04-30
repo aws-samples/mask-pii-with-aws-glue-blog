@@ -99,7 +99,7 @@ The following resources will be provisioned as part of the AWS CloudFormation `c
 > If you have not previously provisioned an **Amazon Cloud9** on this AWS account, launch the CloudFormation template `cf_aws_cloud9_ssm_roles.yml` first. 
 
 
-#### 1. Launch the **CloudFormation** template:
+#### 1. Launch the `cf-prerequisites.yml` AWS CloudFormation template:
 
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
@@ -175,7 +175,7 @@ The following resources will be provisioned as part of the CloudFormation templa
 6. An Amazon S3 endpoint associated with the route table 
 
 
-To launch the **AWS CloudFormation template**:
+To launch the cf-prerequisites.yml` **AWS CloudFormation** template:
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
 2. Log into the **AWS Console** with your **AWS Glue account**.

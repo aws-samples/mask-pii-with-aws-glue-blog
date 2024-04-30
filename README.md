@@ -174,15 +174,15 @@ select * from cx.customer;
 
 The following resources will be provisioned as part of the CloudFormation template launch:
 
-1. Amazon VPC
-2. A private subnet
-3. A route table for the private subnet
-4. A security group with a self-referencing inbound rule
-5. The AWS Identity and Access Management (IAM) service role for AWS Glue. 
-6. An Amazon S3 endpoint associated with the route table 
+1. Amazon **VPC**
+2. A **private subnet**
+3. A **route table** for the private subnet
+4. A **security group** with a self-referencing inbound rule
+5. The **AWS Identity and Access Management (IAM) service role** for AWS Glue. 
+6. An **Amazon S3 endpoint** associated with the route table 
 
 
-To launch the cf-prerequisites.yml` **AWS CloudFormation** template:
+To launch the `cf-prerequisites.yml` **AWS CloudFormation** template:
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
 2. Log into the **AWS Console** with your **AWS Glue account**.
@@ -190,7 +190,7 @@ To launch the cf-prerequisites.yml` **AWS CloudFormation** template:
 4. Choose **Create stack with new resources (standard)**.
 5. Choose **Choose an existing template** and **Upload a template file**.
 6. Select **Choose file** and upload the `cf-prerequisites.yml` in your local project `cloudformation` directory.
-7. Enter a stack **name** (i.e. “GlueAccount-stack”)
+7. Enter a stack **name** (i.e. `GlueAccount-stack`)
 8. In Parameters, select `Glue` for **AccountType**.
 9. Review the rest of parameters and choose **Next**.
 10. In **Review and create**, click the check box "I acknowledge that AWS CloudFormation might create IAM resources with custom names". Then choose **Submit**.
@@ -212,7 +212,7 @@ The resources provisioned as part of the CloudFormation template launch, will be
 When launching the CloudFormation template:
 
 1. Name the stack `TargetAccount-Stack`
-2. In **Paramters** section:
+2. In **Parameters** section:
    * Select `Target` for **AccountType** parameter 
    * Enter the **database password** you would like to use.
 
@@ -227,20 +227,20 @@ And that's it! Your environment meets now the prerequisites to proceed with the 
 
 Don't forget to clean up all the AWS resources you created. It is a best practice to delete resources you are no longer using to avoid unwanted charges.
 
-To delete the resources:
+To delete the resources created by the artifacts in this GitHub repository:
 
 - On the **AWS Source** account:
-  Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `SourceAccount-stack`.
+  Navigate to the **CloudFormation dashboard** in the **AWS Management Console** and delete the `SourceAccount-stack`.
 
 - On the **AWS Glue** account:
-  Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `GlueAccount-stack`.
+  Navigate to the **CloudFormation dashboard** in the **AWS Management Console** and delete the `GlueAccount-stack`.
 
 - On the **AWS Target** account:
-  Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `TargetAccount-stack`.
+  Navigate to the **CloudFormation dashboard** in the **AWS Management Console** and delete the `TargetAccount-stack`.
 
 
 > [!NOTE]
-> If you also launched `cf_aws_cloud9_ssm_roles.yml` CloudFormation template, then delete its CloudFormation stack as well.
+> If you also launched `cf_aws_cloud9_ssm_roles.yml` CloudFormation template, then delete the CloudFormation stack as well.
 
 
 ## Security

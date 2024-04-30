@@ -119,7 +119,7 @@ It will take ~10 minutes to complete.
 
 > [!TIP]
 > Once you've created the AWS CloudFormation stack, review the information on the **Outputs** pane of the stack on the CloudFormation Console.
-> You will need some of the values, such as **`VPC`**, **`RDSSecurityGroup`**, private subnets (**`PrivateSubnet`** and **`PrivateSubnetB`** ) and **`RDSJdbcURL`**.
+> You will need some of the values, such as **`VPC`**, **`RDSSecurityGroup`**, private subnets CIDRs (**`PrivateSubnetCDIR`** and **`PrivateSubnetBCIDR`** ) and **`RDSJdbcURL`**.
 
 
 #### 2. Configure the _Bastion Host_ (Amazon Cloud9):

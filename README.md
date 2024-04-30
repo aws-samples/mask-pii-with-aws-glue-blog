@@ -209,13 +209,33 @@ To setup the **Target account**, log into the AWS Console with your **AWS Target
 
 The resources provisioned as part of the CloudFormation template launch, will be the same as for the Source account.
 
-- When launching the CloudFormation template, select `Target` for **AccountType** parameter, and enter the **database password** you would like to use.
+- When launching the CloudFormation template:
 
-- After creating the database table, do *not* run the insert SQL statements on `insert_source_data.sql` script.
+1. Name the stack i.e. `TargetAccount-Stack`
+2. In **Paramters** section, 
+   a. Select `Target` for **AccountType** parameter, and 
+   b. enter the **database password** you would like to use.
+
+- After creating the database table, do **NOT** run the insert SQL statements on `insert_source_data.sql` script.
 
 
 And that's it! Your environment meets now the prerequisites to proceed with the blog post solution.
 
+
+## Cleanup resources
+
+Don't forget to clean up all the AWS resources you created. It is a best practice to delete resources you are no longer using to avoid unwanted charges.
+
+To delete the resources:
+
+On the **AWS Source** account:
+- Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `SourceAccount-stack`.
+
+On the **AWS Glue** account:
+- Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `GlueAccount-stack`.
+
+On the **AWS Target** account:
+- Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `TargetAccount-stack`.
 
 ## Security
 

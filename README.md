@@ -57,7 +57,7 @@ These are all provided in `scripts` directory.
 
 These are all provided in `sql` directory.
 
-- **`create_database_tabel.sql`**: Contains the SQL statements to create the `customer` table and `cx` schema. 
+- **`create_database_table.sql`**: Contains the SQL statements to create the `customer` table and `cx` schema. 
 
 - **`insert_source_data.sql`**: Contains the SQL statements to populate the `customer` table on the **Source database**.
 
@@ -150,18 +150,25 @@ chmod 755 ./connect_to_database.sh
 
 Enter the **password** to connect to the database. This is the password you provided when launching the CloudFormation stack.
 
-Then run the following commands to create and populate the `customer` table:
+You are now connected to the database. Run the following command to **create** the `customer` table:
 
-```bash
-sourcedb=> \i create_database_table.sql
-sourcedb=> \i insert_source_data.sql
+```sql
+\i create_database_table.sql
+```
+
+and to **populate** the table:
+
+
+```sql
+\i insert_source_data.sql
 ```
 
 To verify the rows have been inserted:
 
-```bash
-sourcedb=> select * from cx.customer;
+```sql
+select * from cx.customer;
 ```
+
 
 ### Step 2: Prepare the dedicated AWS Glue account
 

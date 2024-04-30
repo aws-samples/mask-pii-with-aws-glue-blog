@@ -209,14 +209,15 @@ To setup the **Target account**, log into the AWS Console with your **AWS Target
 
 The resources provisioned as part of the CloudFormation template launch, will be the same as for the Source account.
 
-- When launching the CloudFormation template:
+When launching the CloudFormation template:
 
-1. Name the stack i.e. `TargetAccount-Stack`
-2. In **Paramters** section:
-  1. Select `Target` for **AccountType** parameter, and 
-  2. enter the **database password** you would like to use.
+- Name the stack `TargetAccount-Stack`
+- In **Paramters** section:
+      - Select `Target` for **AccountType** parameter 
+      - Enter the **database password** you would like to use.
 
-- After creating the database table, do **NOT** run the insert SQL statements on `insert_source_data.sql` script.
+
+After creating the database table, do **NOT** run the insert SQL statements on `insert_source_data.sql` script.
 
 
 And that's it! Your environment meets now the prerequisites to proceed with the blog post solution.

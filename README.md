@@ -237,6 +237,11 @@ To delete the resources:
 - On the **AWS Target** account:
   Navigate to the CloudFormation dashboard in the AWS Management Console and delete the `TargetAccount-stack`.
 
+
+> [!NOTE]
+> If you also launched `cf_aws_cloud9_ssm_roles.yml` CloudFormation template, then delete its CloudFormation stack as well.
+
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.

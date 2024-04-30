@@ -48,16 +48,16 @@ You will need this CloudFormation template **only if** you have **not** previous
 These are all provided in `scripts` directory.
 
 
-- **`cloud9-AL2023-setup.sh`**: This is a simple shell script to help you set up the Amazon Cloud9 environments.
+- **`cloud9-AL2023-setup.sh`**: This is a simple shell script to help you install the PostgreSQL client on the Amazon Cloud9 environments.
 
-- **`connect_to_database.sh`**: This shell script will help you connect to the Amazon RDS PostgreSQL database provisioned on the AWS account where you run the script.
+- **`connect_to_database.sh`**: This shell script helps you connect to the Amazon RDS PostgreSQL database provisioned on the AWS account where you run the script.
 
 
 ### SQL statement files
 
 These are all provided in `sql` directory.
 
-- **`create_database_tabel.sql`**: Contains the SQL statements to create the `customer` table. 
+- **`create_database_tabel.sql`**: Contains the SQL statements to create the `customer` table and `cx` schema. 
 
 - **`insert_source_data.sql`**: Contains the SQL statements to populate the `customer` table on the **Source database**.
 
@@ -73,33 +73,33 @@ Complete the following steps:
 
 
 
-### 1. Prepare the AWS Source account
+### Step 1: Prepare the AWS Source account
 
 
 Complete the following steps:
 
-1. Launch the CloudFormation template
+1. Launch the AWS CloudFormation template
 2. Configure the _Bastion Host_ (Amazon Cloud9)
 3. Create and populate the `customer` database table
 
 
-The following resources will be provisioned as part of the CloudFormation `cf-prerequisites.yml` template launch:
+The following resources will be provisioned as part of the AWS CloudFormation `cf-prerequisites.yml` template launch:
 
-1. Amazon VPC
-2. Amazon RDS for PostgreSQL database instance
-3. Two private subnets for the Amazon RDS database
-4. A subnet group for the Amazon RDS database that groups the two private subnets
-5. Route tables for the subnets
-6. A security group for the database
-7. Amazon Cloud9 environment (Bastion Host)
-8. A public subnet for the bastion host
+1. Amazon **VPC**
+2. **Amazon RDS for PostgreSQL** database instance
+3. Two **private subnets** for the Amazon RDS database
+4. A **subnet group** for the Amazon RDS database that groups the two private subnets
+5. A **route table** for the subnets
+6. A **security group** for the database
+7. **Amazon Cloud9 environment** (Bastion Host)
+8. A **public subnet** for the bastion host
 
 
 > [!IMPORTANT]
 > If you have not previously provisioned an **Amazon Cloud9** on this AWS account, launch the CloudFormation template `cf_aws_cloud9_ssm_roles.yml` first. 
 
 
-#### 1. To launch the **CloudFormation** template:
+#### 1. Launch the **CloudFormation** template:
 
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
@@ -108,7 +108,7 @@ The following resources will be provisioned as part of the CloudFormation `cf-pr
 4. Choose **Create stack with new resources (standard)**.
 5. Choose **Choose an existing template** and **Upload a template file**.
 6. Select **Choose file** and upload the `cf-prerequisites.yml` in your local project `cloudformation` directory.
-7. Enter a stack **name** (i.e. “SourceAccount-stack”)
+7. Enter a stack **name** (i.e. `SourceAccount-stack`)
 8. In **Parameters** section:
   - Select `Source` for **AccountType**
   - In **DBMasterUserPassword**, enter a password for the database. 
@@ -119,11 +119,10 @@ It will take ~10 minutes to complete.
 
 > [!TIP]
 > Once you've created the AWS CloudFormation stack, review the information on the **Outputs** pane of the stack on the CloudFormation Console.
-> You will need some of the values, such as **VPC**, **RDSSecurityGroup**, private subnets (**PrivateSubnet** and **PrivateSubnetB** ) and **RDSJdbcURL**.
+> You will need some of the values, such as **`VPC`**, **`RDSSecurityGroup`**, private subnets (**`PrivateSubnet`** and **`PrivateSubnetB`** ) and **`RDSJdbcURL`**.
 
 
-
-#### 2. To configure the _Bastion Host_ (Amazon Cloud9):
+#### 2. Configure the _Bastion Host_ (Amazon Cloud9):
 
 1. On the **AWS Console**, navigate to **Cloud9**.
 2. Select the Cloud9 environment, then choose **Open in Cloud9**.
@@ -138,7 +137,7 @@ chmod 755 ./cloud9-AL2023-setup.sh
 This will install PostgreSQL client on the environment.
 
 
-#### 3. To create and populate the `customer` database table:
+#### 3. Create and populate the `customer` database table:
 
 In the **Cloud9 environment**, upload the artifacts in your local project `sql` directory.
 
@@ -164,7 +163,7 @@ To verify the rows have been inserted:
 sourcedb=> select * from cx.customer;
 ```
 
-### 2 - Prepare the dedicated AWS Glue account
+### Step 2: Prepare the dedicated AWS Glue account
 
 The following resources will be provisioned as part of the CloudFormation template launch:
 
@@ -176,7 +175,7 @@ The following resources will be provisioned as part of the CloudFormation templa
 6. An Amazon S3 endpoint associated with the route table 
 
 
-To launch the **CloudFormation template**:
+To launch the **AWS CloudFormation template**:
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
 2. Log into the **AWS Console** with your **AWS Glue account**.
@@ -196,7 +195,7 @@ It will take ~1 minute to complete.
 > You will need some of the values such as **VPC**, **GlueSecurityGroup**, **PrivateSubnet** and **GlueServiceIAMRole**.
 
 
-### 3 - Prepare the AWS Target account
+### Step 3: Prepare the AWS Target account
 
 
 To setup the **Target account**, log into the AWS Console with your **AWS Target account** and repeat the steps you followed when setting up the Source account. 

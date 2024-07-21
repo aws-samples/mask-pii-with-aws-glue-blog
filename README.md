@@ -1,6 +1,6 @@
-# Copy and scrub PII between Amazon RDS databases using visual ETL jobs in AWS Glue Studio
+# Copy and mask PII between Amazon RDS databases using visual ETL jobs in AWS Glue Studio
 
-This repository is an accompaniment to the blog post __Copy and scrub PII between Amazon RDS databases using visual ETL jobs in AWS Glue Studio__.
+This repository is an accompaniment to the blog post __Copy and mask PII between Amazon RDS databases using visual ETL jobs in AWS Glue Studio__.
 
 The artifacts in this repository will help you complete the **Prerequisites** highlighted in the blog post. 
 
@@ -93,6 +93,7 @@ The following resources will be provisioned as part of the AWS CloudFormation `c
 6. A **security group** for the database
 7. **Amazon Cloud9 environment** (Bastion Host)
 8. A **public subnet** for the bastion host
+9. An **Amazon Lambda function** used to obtain the Cloud9 environment's Security Group Id. 
 
 
 > [!IMPORTANT]
@@ -109,11 +110,13 @@ The following resources will be provisioned as part of the AWS CloudFormation `c
 5. Choose **Choose an existing template** and **Upload a template file**.
 6. Select **Choose file** and upload the `cf-prerequisites.yml` in your local project `cloudformation` directory.
 7. Enter a stack **name** (i.e. `SourceAccount-stack`)
-8. In **Parameters** section:
-  - Select `Source` for **AccountType**
-  - In **DBMasterUserPassword**, enter a password for the database. 
-9. Review the rest of parameters and choose **Next**.
-10. In **Review and create**, click the check box **I acknowledge that AWS CloudFormation might create IAM resources with custom names**. Then choose **Submit**.
+8. In **Common Settings** section:
+   * Select `Source` for account type.
+9. In **Source or Target Account Settings** section:
+   * Enter the **CIDRs** for the VPC, public subnet and the two private subnets for the database.
+   * Enter the **database password** you would like to use.
+10. Review the rest of parameters, ignoring the ones in _Glue Account Settings section_, and choose **Next**.
+11. In **Review and create**, click the check box **I acknowledge that AWS CloudFormation might create IAM resources with custom names**. Then choose **Submit**.
 
 It will take ~10 minutes to complete.
 
@@ -191,9 +194,10 @@ To launch the `cf-prerequisites.yml` **AWS CloudFormation** template:
 5. Choose **Choose an existing template** and **Upload a template file**.
 6. Select **Choose file** and upload the `cf-prerequisites.yml` in your local project `cloudformation` directory.
 7. Enter a stack **name** (i.e. `GlueAccount-stack`)
-8. In Parameters, select `Glue` for **AccountType**.
-9. Review the rest of parameters and choose **Next**.
-10. In **Review and create**, click the check box "I acknowledge that AWS CloudFormation might create IAM resources with custom names". Then choose **Submit**.
+8. In **Common Settings** section, select `Glue` for account type.
+9. In **Glue Account Settings** section, enter the **CIDR for the VPC** and the **CIDR for the private subnet**.
+10. Review the rest of parameters, ignoring the ones in _Source or Target Account Settings section_. Choose **Next**.
+11. In **Review and create**, click the check box "I acknowledge that AWS CloudFormation might create IAM resources with custom names". Then choose **Submit**.
 
 It will take ~1 minute to complete.
 
@@ -212,8 +216,10 @@ The resources provisioned as part of the CloudFormation template launch, will be
 When launching the CloudFormation template:
 
 1. Name the stack `TargetAccount-Stack`
-2. In **Parameters** section:
-   * Select `Target` for **AccountType** parameter 
+2. In **Common Settings** section:
+   * Select `Target` for account type. 
+3. In **Source or Target Account Settings** section:
+   * Enter the **CIDRs** for the VPC, public subnet and the two private subnets for the database.
    * Enter the **database password** you would like to use.
 
 

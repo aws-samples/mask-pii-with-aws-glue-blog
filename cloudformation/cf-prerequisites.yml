@@ -482,7 +482,7 @@ Resources:
           def lambda_handler(event, context):
               
               if event['RequestType'] == 'Delete':
-                  cfnresponse.send(event, context, cfnresponse.SUCCESS, "")
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
 
               try: 
   
@@ -509,7 +509,7 @@ Resources:
                 
                 cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, 'Cloud9EnvSGID')
               except:
-                cfnresponse.send(event, context, cfnresponse.FAILED, "")
+                cfnresponse.send(event, context, cfnresponse.FAILED, {})
 
   GetCloud9SGInfo:
     Condition: isNotGlueAccount

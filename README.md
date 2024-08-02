@@ -7,7 +7,7 @@ The artifacts in this repository will help you complete the **Prerequisites** hi
 
 ## Requirements
 
-Before leveraging the artifacts in this repository, you need:
+Before using the artifacts in this repository, you need:
 
 1. Three AWS accounts: Source, Glue and Target.
 2. Ensure your AWS user has permissions to create and manage the necessary AWS resources for the solution on the three AWS accounts.
@@ -25,22 +25,22 @@ These teamplates are provided in the `clouformation` directory.
 
 #### `cf-prerequisites.yml`
 
-This template provisions AWS components in Source, Glue and Target accounts as per the Prerequisites in the blog post. 
+This template provisions AWS components in source, AWS Glue and target accounts as per the Prerequisites in the blog post. 
 
-After deploying this stack on each account, your environment will look like as shown on the diagram below:
+After deploying this stack on each account, your environment will look like the following diagram:
 
 
 ![Environment](docs/env-after-prerequisites.jpg)
 
 
-In addition to the components shown in the diagram, the CloudFormation stack creates an [Amazon Cloud9](https://docs.aws.amazon.com/cloud9/latest/user-guide/welcome.html) environment in both **Source** and **Target accounts**. The purpose of these Amazon Cloud9 environments is to act as **bastion host**, so you can create and access the `customer` table on the Amazon RDS PostgreSQL databases.
+In addition to the components shown in the diagram, the CloudFormation stack creates an [Amazon Cloud9](https://docs.aws.amazon.com/cloud9/latest/user-guide/welcome.html) environment in both **source** and **target accounts**. The purpose of these Amazon Cloud9 environments is to act as **bastion host**, so you can create and access the `customer` table on the Amazon RDS PostgreSQL databases.
 
 
 #### `cf_aws_cloud9_ssm_roles.yml`
 
 This AWS CloudFormation template creates the AWS IAM roles that enable [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html) to manage the EC2 instance that backs the Amazon Cloud9 environment.
 
-You will need this CloudFormation template **only if** you have **not** previously provisioned an Amazon Cloud9 on the Source and/or Target accounts.
+You will need this CloudFormation template **only if** you have **not** previously provisioned an Amazon Cloud9 on the source and/or target accounts.
 
 
 ### Shell scripts
@@ -59,7 +59,7 @@ These are all provided in `sql` directory.
 
 - **`create_database_table.sql`**: Contains the SQL statements to create the `customer` table and `cx` schema. 
 
-- **`insert_source_data.sql`**: Contains the SQL statements to populate the `customer` table on the **Source database**.
+- **`insert_source_data.sql`**: Contains the SQL statements to populate the `customer` table on the **source database**.
 
 
 
@@ -67,13 +67,13 @@ These are all provided in `sql` directory.
 
 Complete the following steps:
 
-1. Prepare the AWS Source account
+1. Prepare the AWS source account
 2. Prepare the dedicated AWS Glue account
-3. Prepare the AWS Target account
+3. Prepare the AWS target account
 
 
 
-### Step 1: Prepare the AWS Source account
+### Step 1: Prepare the AWS source account
 
 
 Complete the following steps:
@@ -93,7 +93,7 @@ The following resources will be provisioned as part of the AWS CloudFormation `c
 6. A **security group** for the database
 7. **Amazon Cloud9 environment** (Bastion Host)
 8. A **public subnet** for the bastion host
-9. An **Amazon Lambda function** used to obtain the Cloud9 environment's Security Group Id. 
+9. An **Amazon Lambda function** used to obtain the Cloud9 environment's security group Id. 
 
 
 > [!IMPORTANT]
@@ -104,7 +104,7 @@ The following resources will be provisioned as part of the AWS CloudFormation `c
 
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
-2. Log into the [AWS Console](https://console.aws.amazon.com/) with your **AWS Source account**.
+2. Sign in to the [AWS Management Console](https://console.aws.amazon.com/) with your **AWS source account**.
 3. Navigate to **CloudFormation**.
 4. Choose **Create stack with new resources (standard)**.
 5. Choose **Choose an existing template** and **Upload a template file**.
@@ -121,13 +121,13 @@ The following resources will be provisioned as part of the AWS CloudFormation `c
 It will take ~10 minutes to complete.
 
 > [!TIP]
-> Once you've created the AWS CloudFormation stack, review the information on the **Outputs** pane of the stack on the CloudFormation Console.
+> Once you've created the AWS CloudFormation stack, review the information on the **Outputs** pane of the stack on the AWS CloudFormation console.
 > You will need some of the values, such as **`VPC`**, **`RDSSecurityGroup`**, private subnets CIDRs (**`PrivateSubnetCDIR`** and **`PrivateSubnetBCIDR`**) and **`RDSJdbcURL`**.
 
 
 #### 2. Configure the _Bastion Host_ (Amazon Cloud9):
 
-1. On the **AWS Console**, navigate to **Cloud9**.
+1. On the **AWS Management Console**, navigate to **Cloud9**.
 2. Select the Cloud9 environment, then choose **Open in Cloud9**.
 3. In the environment, upload the artifacts in your local project `scripts` directory.
 4. Then open a window terminal and run the following commands:
@@ -188,7 +188,7 @@ The following resources will be provisioned as part of the CloudFormation templa
 To launch the `cf-prerequisites.yml` **AWS CloudFormation** template:
 
 1. Download and unzip this GitHub repository, or use a git client to clone the project GitHub repository to a local directory.
-2. Log into the **AWS Console** with your **AWS Glue account**.
+2. Sign in to the **AWS Management Console** with your **AWS Glue account**.
 3. Navigate to **CloudFormation**.
 4. Choose **Create stack with new resources (standard)**.
 5. Choose **Choose an existing template** and **Upload a template file**.
@@ -206,12 +206,12 @@ It will take ~1 minute to complete.
 > You will need some of the values such as **VPC**, **GlueSecurityGroup**, **PrivateSubnet** and **GlueServiceIAMRole**.
 
 
-### Step 3: Prepare the AWS Target account
+### Step 3: Prepare the AWS target account
 
 
-To setup the **Target account**, log into the AWS Console with your **AWS Target account** and repeat the steps you followed when setting up the Source account. 
+To setup the **target account**, sign in to the AWS Management Console with your **AWS target account** and repeat the steps you followed when setting up the source account. 
 
-The resources provisioned as part of the CloudFormation template launch, will be the same as for the Source account.
+The resources provisioned as part of the CloudFormation template launch, will be the same as for the source account.
 
 When launching the CloudFormation template:
 
@@ -235,13 +235,13 @@ Don't forget to clean up all the AWS resources you created. It is a best practic
 
 To delete the resources created by the artifacts in this GitHub repository:
 
-- On the **AWS Source** account:
+- On the **AWS source** account:
   Navigate to the **CloudFormation dashboard** in the **AWS Management Console** and delete the `SourceAccount-stack`.
 
 - On the **AWS Glue** account:
   Navigate to the **CloudFormation dashboard** in the **AWS Management Console** and delete the `GlueAccount-stack`.
 
-- On the **AWS Target** account:
+- On the **AWS target** account:
   Navigate to the **CloudFormation dashboard** in the **AWS Management Console** and delete the `TargetAccount-stack`.
 
 

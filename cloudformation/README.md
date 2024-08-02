@@ -8,14 +8,14 @@ This directory contains [AWS CloudFormation](https://docs.aws.amazon.com/AWSClou
 ## Artifacts Overview
 
 
-- **`cf-prerequisites.yml`**: This template provisions AWS components in Source, Glue and Target accounts as per the Prerequisites in the blog post. 
+- **`cf-prerequisites.yml`**: This template provisions AWS components in source, AWS Glue and target accounts as per the Prerequisites in the blog post. 
 
 
 - **`cf_aws_cloud9_ssm_roles.yml`**: 
 This AWS CloudFormation template creates the AWS IAM roles that enable [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html) to manage the EC2 instance that backs the Amazon Cloud9 environment.
 
 > [!IMPORTANT]
-> You will need `cf_aws_cloud9_ssm_roles.yml` AWS CloudFormation template **only if** you have **not** previously provisioned an Amazon Cloud9 environment on the Source and/or Target accounts.
+> You will need `cf_aws_cloud9_ssm_roles.yml` AWS CloudFormation template **only if** you have **not** previously provisioned an Amazon Cloud9 environment on the source and/or target accounts.
 
 
 Refer to main [README](../README.md) file for instructions on how to leverage these AWS CloudFormation templates.
